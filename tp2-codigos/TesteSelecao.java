@@ -1,25 +1,77 @@
 import java.util.Scanner;
 
-class Restaurante{
-	private int id;
-	private String nome;
+class Data{
+	private int dia;
+	private int mes;
+	private int ano;
 
-	public Restaurante(int id, String nome){
-		this.id = id;
-		this.nome = nome;
+	public Data(int dia, int mes, int ano){
+		this.dia = dia;
+		this.mes = mes;
+		this.ano = ano;
 	}
 
-	public int getId(){
-		return id;
+	public int getDia(){
+		return dia;
 	}
-	public String getNome(){
-		return nome;
+	public int getMes(){
+		return mes;
+	}
+	public int getAno(){
+		return ano;
+	}
+	
+
+	public static Data parseData(String d){
+		Scanner sc = new Scanner(d);
+		sc.useDelimiter("-");
+		int ano = sc.nextInt();
+		int mes = sc.nextInt();
+		int dia = sc.nextInt();
+
+		sc.close();
+
+		return new Data(dia, mes, ano);
 	}
 
-	public void imprimir(){
-		System.out.println(id + "," + nome);
+	public String formatar(){
+		return String.format("%02d/%02d/%04d", dia, mes, ano);
 	}
 }
+
+class Hora{
+	private int hora;
+	private int min;
+
+	public Hora(int hora, int min){
+		this.hora = hora;
+		this.min = min;
+	}
+
+	public int getHora(){
+		return hora;
+	}
+	public int getMin(){
+		return min;
+	}
+
+	public static Hora parseHora(String h){
+		Scanner sc = new Scanner(h);
+		sc.useDelimiter(":");
+
+		int hora = sc.nextInt();
+		int min = sc.nextInt();
+		sc.close();
+
+		return new Hora(hora, min);
+	}
+
+	public String formatar(){
+		return String.format("%02d:%02d", hora, min);
+	}
+}
+
+//colocar classe Retaurante
 
 class Selecao{
 	public static void ordenar(Restaurante[] array, int n){
