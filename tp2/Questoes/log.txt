@@ -1,0 +1,3 @@
+Tempo (ns): 628533
+Comparacoes: 646
+Movimentacoes: 170
