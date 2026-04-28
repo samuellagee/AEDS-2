@@ -12,6 +12,16 @@ class Data{
 		this.ano = ano;
 	}
 
+	public int getAno(){
+		return ano;
+	}
+	public int getMes(){
+		return mes;
+	}
+	public int getDia(){
+		return dia;
+	}
+
 	public static Data parseData(String d){
 		Scanner sc = new Scanner(d);
 		sc.useDelimiter("-");
@@ -212,25 +222,25 @@ class ColecaoRestaurantes{
 		return restaurantes; 
 	}
 
- public void lerCsv(String path){
-        try{
-            Scanner sc = new Scanner(new java.io.File(path));
+	public void lerCsv(String path){
+		try{
+			Scanner sc = new Scanner(new java.io.File(path));
 
-            if(sc.hasNextLine()){
-                sc.nextLine();
-            }
-            while(sc.hasNextLine()){
-                String l = sc.nextLine();
+			if(sc.hasNextLine()){
+				sc.nextLine();
+			}
+			while(sc.hasNextLine()){
+				String l = sc.nextLine();
 
-                Restaurante r = Restaurante.parseRestaurante(l);
-                restaurantes[tamanho] = r;
-                tamanho++;
-            }
-            sc.close();
-        }catch(Exception e){
-            System.out.println("Erro ao ler");
-        }
-    }
+				Restaurante r = Restaurante.parseRestaurante(l);
+				restaurantes[tamanho] = r;
+				tamanho++;
+			}
+			sc.close();
+		}catch(Exception e){
+			System.out.println("Erro ao ler");
+		}
+	}
 
 
 	public static ColecaoRestaurantes lerCsv(){
@@ -255,78 +265,129 @@ class ColecaoRestaurantes{
 	}
 }
 
-class Insercao{
-    public static void ordenacao(Restaurante[] v, int n, long[] comp, long[] mov){
-        for(int i = 1; i < n; i++){
-            Restaurante tmp = v[i];
-            mov[0]++;
-            int j = i - 1;
-            boolean continuar = true;
+class Fila{
+	private Restaurante[] array;
+	private int primeiro;
+	private int ultimo;
+	private int tamanho;
 
-            while(j >= 0 && continuar){
-                comp[0]++;
+	public Fila(){
+		array = new Restaurante[5];
+		primeiro = 0;
+		ultimo = 0;
+		tamanho = 0;
+	}
 
-                if(v[j].getCidade().compareTo(tmp.getCidade()) > 0 || (v[j].getCidade().compareTo(tmp.getCidade()) == 0 && v[j].getId() > tmp.getId())){
-                    v[j + 1] = v[j];
-                    mov[0]++;
-                    j--;
-                }else{
-                    continuar = false;
-                }
-            }
+	public void inserir(Restaurante x){
+		if(tamanho == 5){
+			remover();
+		}
+		array[ultimo] = x;
+		ultimo = (ultimo + 1) % 5;
+		tamanho++;
 
-            v[j + 1] = tmp;
-            mov[0]++;
-        }
-    }
+		System.out.println("(I)" + media());
+	}
+
+	public Restaurante remover(){
+		Restaurante resp = array[primeiro];
+		primeiro = (primeiro + 1) % 5;
+		tamanho--;
+
+		System.out.println("(R)" + resp.getNome());
+
+		return resp;
+	}
+
+	public int media(){
+		int soma = 0;
+
+		for(int i = 0; i < tamanho; i++){
+			int pos = (primeiro + i) % 5;
+			soma += array[pos].getDataAbertura().getAno();
+		}
+		double media = (double)soma / tamanho;
+		int resp = (int)media;
+		if(media - resp >= 0.5){
+			resp = resp + 1;
+		}
+
+		return resp;
+	}
+
+	public void mostrar(){
+		for(int i = 0; i < tamanho; i++){
+			int pos = (primeiro + i) % 5;
+			System.out.println(array[pos].imprimir());
+		}
+	}
 }
 
-public class Restaurantes2{
-    public static void main(String[] args) throws Exception{
-        ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
-        Scanner sc = new Scanner(System.in);
+public class Restaurantes7{
+	public static void main(String[] args) throws Exception{
 
-        int[] ids = new int[1000];
-        int qtdIds = 0;
-        int id = sc.nextInt();
+		ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
+		Scanner sc = new Scanner(System.in);
 
-        while(id != -1){
-            ids[qtdIds] = id;
-            qtdIds++;
-            id = sc.nextInt();
-        }
-        Restaurante[] selecionados = new Restaurante[1000];
-        int qtd = 0;
+		Fila fila = new Fila();
 
-        for(int i = 0; i < qtdIds; i++){
-            int j = 0;
-            boolean achou = false;
+		int id = sc.nextInt();
 
-            while(j < colecao.getTamanho() && achou == false){
-                if(colecao.getRestaurantes()[j].getId() == ids[i]){
-                    selecionados[qtd] = colecao.getRestaurantes()[j];
-                    qtd++;
-                    achou = true;
-                }
-                j++;
-            }
-        }
+		while(id != -1){
 
-        long[] comp = {0};
-        long[] mov = {0};
-        long inicio = System.nanoTime();
-        Insercao.ordenacao(selecionados, qtd, comp, mov);
-        long fim = System.nanoTime();
-		long tempo = fim - inicio;
+			int j = 0;
+			boolean achou = false;
 
-        FileWriter fw = new FileWriter("845833_insercao.txt");
-        fw.write("845833\t " + comp[0] + "\t" + mov[0] + "\t" + tempo);
-        fw.close();
+			while(j < colecao.getTamanho() && achou == false){
+				if(colecao.getRestaurantes()[j].getId() == id){
+					fila.inserir(colecao.getRestaurantes()[j]);
+					achou = true;
+				}
+				j++;
+			}
 
-        for(int i = 0; i < qtd; i++){
-            System.out.println(selecionados[i].imprimir());
-        }
+			id = sc.nextInt();
+		}
 
-        sc.close();
-    }
+		int n = sc.nextInt();
+		sc.nextLine();
+
+		for(int i = 0; i < n; i++){
+
+			String linha = sc.nextLine();
+
+			while(linha.length() == 0){
+				linha = sc.nextLine();
+			}
+
+			if(linha.charAt(0) == 'I'){
+
+				Scanner sc2 = new Scanner(linha);
+				sc2.next();
+				int idInserir = sc2.nextInt();
+
+				int j = 0;
+				boolean achou = false;
+
+				while(j < colecao.getTamanho() && achou == false){
+					if(colecao.getRestaurantes()[j].getId() == idInserir){
+						fila.inserir(colecao.getRestaurantes()[j]);
+						achou = true;
+					}
+					j++;
+				}
+
+				sc2.close();
+
+			}else if(linha.charAt(0) == 'R'){
+				fila.remover();
+			}
+		}
+
+		fila.mostrar();
+
+		sc.close();
+	}
 }
+
+

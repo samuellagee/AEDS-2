@@ -212,25 +212,25 @@ class ColecaoRestaurantes{
 		return restaurantes; 
 	}
 
- public void lerCsv(String path){
-        try{
-            Scanner sc = new Scanner(new java.io.File(path));
+	public void lerCsv(String path){
+		try{
+			Scanner sc = new Scanner(new java.io.File(path));
 
-            if(sc.hasNextLine()){
-                sc.nextLine();
-            }
-            while(sc.hasNextLine()){
-                String l = sc.nextLine();
+			if(sc.hasNextLine()){
+				sc.nextLine();
+			}
+			while(sc.hasNextLine()){
+				String l = sc.nextLine();
 
-                Restaurante r = Restaurante.parseRestaurante(l);
-                restaurantes[tamanho] = r;
-                tamanho++;
-            }
-            sc.close();
-        }catch(Exception e){
-            System.out.println("Erro ao ler");
-        }
-    }
+				Restaurante r = Restaurante.parseRestaurante(l);
+				restaurantes[tamanho] = r;
+				tamanho++;
+			}
+			sc.close();
+		}catch(Exception e){
+			System.out.println("Erro ao ler");
+		}
+	}
 
 
 	public static ColecaoRestaurantes lerCsv(){
@@ -255,78 +255,78 @@ class ColecaoRestaurantes{
 	}
 }
 
-class Insercao{
-    public static void ordenacao(Restaurante[] v, int n, long[] comp, long[] mov){
-        for(int i = 1; i < n; i++){
-            Restaurante tmp = v[i];
-            mov[0]++;
-            int j = i - 1;
-            boolean continuar = true;
+class Pesquisa{
+	public static boolean busca(Restaurante[] v, int n, String nome, long[] comp){
+		int i = 0;
+		boolean achou = false;
 
-            while(j >= 0 && continuar){
-                comp[0]++;
+		while(i < n && achou == false){
+			comp[0]++;
 
-                if(v[j].getCidade().compareTo(tmp.getCidade()) > 0 || (v[j].getCidade().compareTo(tmp.getCidade()) == 0 && v[j].getId() > tmp.getId())){
-                    v[j + 1] = v[j];
-                    mov[0]++;
-                    j--;
-                }else{
-                    continuar = false;
-                }
-            }
+			if(v[i].getNome().compareTo(nome) == 0){
+				achou = true;
+			}
+			i++;
+		}
 
-            v[j + 1] = tmp;
-            mov[0]++;
-        }
-    }
+		return achou;		
+	}
 }
 
-public class Restaurantes2{
-    public static void main(String[] args) throws Exception{
-        ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
-        Scanner sc = new Scanner(System.in);
+public class Restaurantes3{
+	public static void main(String[] args) throws Exception{
+		ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
+		Scanner sc = new Scanner(System.in);
 
-        int[] ids = new int[1000];
-        int qtdIds = 0;
-        int id = sc.nextInt();
+		int[] ids = new int[1000];
+		int qtdIds = 0;
+		int id = sc.nextInt();
 
-        while(id != -1){
-            ids[qtdIds] = id;
-            qtdIds++;
-            id = sc.nextInt();
-        }
-        Restaurante[] selecionados = new Restaurante[1000];
-        int qtd = 0;
+		while(id != -1){
+			ids[qtdIds] = id;
+			qtdIds++;
+			id = sc.nextInt();
+		}
 
-        for(int i = 0; i < qtdIds; i++){
-            int j = 0;
-            boolean achou = false;
+		Restaurante[] selecionados = new Restaurante[1000];
+		int qtd = 0;
 
-            while(j < colecao.getTamanho() && achou == false){
-                if(colecao.getRestaurantes()[j].getId() == ids[i]){
-                    selecionados[qtd] = colecao.getRestaurantes()[j];
-                    qtd++;
-                    achou = true;
-                }
-                j++;
-            }
-        }
+		for(int i = 0; i < qtdIds; i++){
+			int j = 0;
+			boolean achou = false;
 
-        long[] comp = {0};
-        long[] mov = {0};
-        long inicio = System.nanoTime();
-        Insercao.ordenacao(selecionados, qtd, comp, mov);
-        long fim = System.nanoTime();
+			while(j < colecao.getTamanho() && achou == false){
+				if(colecao.getRestaurantes()[j].getId() == ids[i]){
+					selecionados[qtd] = colecao.getRestaurantes()[j];
+					qtd++;
+					achou = true;
+				}
+				j++;
+			}
+		}
+
+		long[] comp = {0};
+		//long[] mov = {0};
+		long inicio = System.nanoTime();
+		String nome = sc.nextLine();
+		nome = sc.nextLine();
+		while(nome.compareTo("FIM") != 0){
+			boolean achou = Pesquisa.busca(selecionados, qtd, nome, comp);
+
+			if(achou) System.out.println("SIM");
+			else System.out.println("NAO");
+
+			nome = sc.nextLine();
+		}
+
+		long fim = System.nanoTime();  
 		long tempo = fim - inicio;
 
-        FileWriter fw = new FileWriter("845833_insercao.txt");
-        fw.write("845833\t " + comp[0] + "\t" + mov[0] + "\t" + tempo);
-        fw.close();
+		FileWriter fw = new FileWriter("845833_sequencial.txt");
+		fw.write("845833\t" + comp[0] + "\t" + tempo);
+		fw.close();
 
-        for(int i = 0; i < qtd; i++){
-            System.out.println(selecionados[i].imprimir());
-        }
-
-        sc.close();
-    }
+		sc.close();
+	}
 }
+

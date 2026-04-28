@@ -12,6 +12,16 @@ class Data{
 		this.ano = ano;
 	}
 
+	public int getAno(){
+		return ano;
+	}
+	public int getMes(){
+		return mes;
+	}
+	public int getDia(){
+		return dia;
+	}
+
 	public static Data parseData(String d){
 		Scanner sc = new Scanner(d);
 		sc.useDelimiter("-");
@@ -212,25 +222,25 @@ class ColecaoRestaurantes{
 		return restaurantes; 
 	}
 
- public void lerCsv(String path){
-        try{
-            Scanner sc = new Scanner(new java.io.File(path));
+	public void lerCsv(String path){
+		try{
+			Scanner sc = new Scanner(new java.io.File(path));
 
-            if(sc.hasNextLine()){
-                sc.nextLine();
-            }
-            while(sc.hasNextLine()){
-                String l = sc.nextLine();
+			if(sc.hasNextLine()){
+				sc.nextLine();
+			}
+			while(sc.hasNextLine()){
+				String l = sc.nextLine();
 
-                Restaurante r = Restaurante.parseRestaurante(l);
-                restaurantes[tamanho] = r;
-                tamanho++;
-            }
-            sc.close();
-        }catch(Exception e){
-            System.out.println("Erro ao ler");
-        }
-    }
+				Restaurante r = Restaurante.parseRestaurante(l);
+				restaurantes[tamanho] = r;
+				tamanho++;
+			}
+			sc.close();
+		}catch(Exception e){
+			System.out.println("Erro ao ler");
+		}
+	}
 
 
 	public static ColecaoRestaurantes lerCsv(){
@@ -248,85 +258,195 @@ class ColecaoRestaurantes{
 
 			sc.close();
 		}catch(Exception e){
-			System.out.println("Erro ao ler");
+			System.out.println("Erro");
 		}
 
 		return c;
 	}
 }
 
-class Insercao{
-    public static void ordenacao(Restaurante[] v, int n, long[] comp, long[] mov){
-        for(int i = 1; i < n; i++){
-            Restaurante tmp = v[i];
-            mov[0]++;
-            int j = i - 1;
-            boolean continuar = true;
+class Lista{
+	private Restaurante[] array;
+	private int n;
 
-            while(j >= 0 && continuar){
-                comp[0]++;
+	public Lista(){
+		array = new Restaurante[1000];
+		n = 0;
+	}
 
-                if(v[j].getCidade().compareTo(tmp.getCidade()) > 0 || (v[j].getCidade().compareTo(tmp.getCidade()) == 0 && v[j].getId() > tmp.getId())){
-                    v[j + 1] = v[j];
-                    mov[0]++;
-                    j--;
-                }else{
-                    continuar = false;
-                }
-            }
+	public void inserirInicio(Restaurante x) throws Exception{
+		if(n >= array.length){
+			throw new Exception("Erro");
+		}
 
-            v[j + 1] = tmp;
-            mov[0]++;
-        }
-    }
+		for(int i = n; i > 0; i--){
+			array[i] = array[i-1];
+		}
+
+		array[0] = x;
+		n++;
+	}
+
+	public void inserirFim(Restaurante x) throws Exception{
+		if(n >= array.length){
+			throw new Exception("Erro");
+		}
+
+		array[n] = x;
+		n++;
+	}
+
+	public void inserir(Restaurante x, int pos) throws Exception{
+		if(n >= array.length || pos < 0 || pos > n){
+			throw new Exception("Erro");
+		}
+
+		for(int i = n; i > pos; i--){
+			array[i] = array[i-1];
+		}
+
+		array[pos] = x;
+		n++;
+	}
+
+	public Restaurante removerInicio() throws Exception{
+		if(n == 0){
+			throw new Exception("Erro");
+		}
+		Restaurante resp = array[0];
+		n--;
+
+		for(int i = 0; i < n; i++){
+			array[i] = array[i+1];
+		}
+
+		return resp;
+	}
+
+	public Restaurante removerFim() throws Exception{
+		if(n == 0){
+			throw new Exception("Erro");
+		}
+
+		return array[--n];
+	}
+
+	public Restaurante remover(int pos) throws Exception{
+		if(n == 0 || pos < 0 || pos >= n){
+			throw new Exception("Erro");
+		}
+		Restaurante resp = array[pos];
+		n--;
+
+		for(int i = pos; i < n; i++){
+			array[i] = array[i+1];
+		}
+
+		return resp;
+	}
+
+	public void mostrar(){
+		for(int i = 0; i < n; i++){
+			System.out.println(array[i].imprimir());
+		}
+	}
 }
 
-public class Restaurantes2{
-    public static void main(String[] args) throws Exception{
-        ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
-        Scanner sc = new Scanner(System.in);
+public class Restaurantes6{
+	public static void main(String[] args) throws Exception{
 
-        int[] ids = new int[1000];
-        int qtdIds = 0;
-        int id = sc.nextInt();
+		ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
+		Scanner sc = new Scanner(System.in);
+		Lista lista = new Lista();
 
-        while(id != -1){
-            ids[qtdIds] = id;
-            qtdIds++;
-            id = sc.nextInt();
-        }
-        Restaurante[] selecionados = new Restaurante[1000];
-        int qtd = 0;
+		int id = sc.nextInt();
 
-        for(int i = 0; i < qtdIds; i++){
-            int j = 0;
-            boolean achou = false;
+		while(id != -1){
+			int j = 0;
+			boolean achou = false;
 
-            while(j < colecao.getTamanho() && achou == false){
-                if(colecao.getRestaurantes()[j].getId() == ids[i]){
-                    selecionados[qtd] = colecao.getRestaurantes()[j];
-                    qtd++;
-                    achou = true;
-                }
-                j++;
-            }
-        }
+			while(j < colecao.getTamanho() && achou == false){
+				if(colecao.getRestaurantes()[j].getId() == id){
+					lista.inserirFim(colecao.getRestaurantes()[j]);
+					achou = true;
+				}
+				j++;
+			}
 
-        long[] comp = {0};
-        long[] mov = {0};
-        long inicio = System.nanoTime();
-        Insercao.ordenacao(selecionados, qtd, comp, mov);
-        long fim = System.nanoTime();
-		long tempo = fim - inicio;
+			id = sc.nextInt();
+		}
 
-        FileWriter fw = new FileWriter("845833_insercao.txt");
-        fw.write("845833\t " + comp[0] + "\t" + mov[0] + "\t" + tempo);
-        fw.close();
+		int n = sc.nextInt();
+		for(int i = 0; i < n; i++){
 
-        for(int i = 0; i < qtd; i++){
-            System.out.println(selecionados[i].imprimir());
-        }
+			String comando = sc.next();
 
-        sc.close();
-    }
+			if(comando.charAt(0) == 'I' && comando.charAt(1) == 'I'){
+					int id2 = sc.nextInt();
+
+				int j = 0;
+				boolean achou = false;
+
+				while(j < colecao.getTamanho() && achou == false){
+					if(colecao.getRestaurantes()[j].getId() == id2){
+						lista.inserirInicio(colecao.getRestaurantes()[j]);
+						achou = true;
+					}
+					j++;
+				}
+			}
+
+			else if(comando.charAt(0) == 'I' && comando.charAt(1) == 'F'){
+				int id2 = sc.nextInt();
+
+				int j = 0;
+				boolean achou = false;
+
+				while(j < colecao.getTamanho() && achou == false){
+					if(colecao.getRestaurantes()[j].getId() == id2){
+						lista.inserirFim(colecao.getRestaurantes()[j]);
+						achou = true;
+					}
+					j++;
+				}
+			}
+
+			else if(comando.charAt(0) == 'I' && comando.charAt(1) == '*'){
+				int pos = sc.nextInt();
+				int id2 = sc.nextInt();
+
+				int j = 0;
+				boolean achou = false;
+
+				while(j < colecao.getTamanho() && achou == false){
+					if(colecao.getRestaurantes()[j].getId() == id2){
+						lista.inserir(colecao.getRestaurantes()[j], pos);
+						achou = true;
+					}
+					j++;
+				}
+			}
+
+			else if(comando.charAt(0) == 'R' && comando.charAt(1) == 'I'){
+				Restaurante r = lista.removerInicio();
+					System.out.println("(R)" + r.getNome());
+			}
+
+			else if(comando.charAt(0) == 'R' && comando.charAt(1) == 'F'){
+				Restaurante r = lista.removerFim();
+				System.out.println("(R)" + r.getNome());
+			}
+
+			else if(comando.charAt(0) == 'R' && comando.charAt(1) == '*'){
+				int pos = sc.nextInt();
+				Restaurante r = lista.remover(pos);
+				System.out.println("(R)" + r.getNome());
+			}
+		}
+
+		lista.mostrar();
+
+		sc.close();
+	}
 }
+

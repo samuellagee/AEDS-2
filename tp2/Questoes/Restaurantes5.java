@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.io.FileWriter;
 
 class Data{
 	private int dia;
@@ -9,6 +10,16 @@ class Data{
 		this.dia = dia;
 		this.mes = mes;
 		this.ano = ano;
+	}
+
+	public int getAno(){
+		return ano;
+	}
+	public int getMes(){
+		return mes;
+	}
+	public int getDia(){
+		return dia;
 	}
 
 	public static Data parseData(String d){
@@ -80,7 +91,39 @@ class Restaurante{
 		this.aberto = aberto;
 	}
 
-	public int getId(){ return id; }
+	public int getId(){
+		return id;
+	}
+	public String getNome(){
+		return nome;
+	}
+	public String getCidade(){
+		return cidade;
+	}
+	public int getCapacidade(){
+		return capacidade;
+	}
+	public double getAvaliacao(){
+		return avaliacao;
+	}
+	public String[] getTiposCozinha(){
+		return tiposCozinha;
+	}
+	public int getFaixaPreco(){
+		return faixaPreco;
+	}
+	public Hora getHorarioAbertura(){
+		return horarioAbertura;
+	}
+	public Hora getHorarioFechamento(){
+		return horarioFechamento; 
+	}
+	public Data getDataAbertura(){ 
+		return dataAbertura;
+	}
+	public boolean getAberto(){ 
+		return aberto; 
+	}
 
 	public static String[] separarTipos(String tipos){
 		Scanner sc = new Scanner(tipos);
@@ -146,7 +189,6 @@ class Restaurante{
 	}
 
 	public String imprimir(){
-
 		String tipos = "";
 		for(int i = 0; i < tiposCozinha.length && tiposCozinha[i] != null; i++){
 			tipos += tiposCozinha[i];
@@ -160,18 +202,7 @@ class Restaurante{
 			faixa += "$";
 		}
 
-		return "[" +
-			id + " ## " +
-			nome + " ## " +
-			cidade + " ## " +
-			capacidade + " ## " +
-			avaliacao + " ## " +
-			"[" + tipos + "] ## " +
-			faixa + " ## " +
-			horarioAbertura.formatar() + "-" + horarioFechamento.formatar() + " ## " +
-			dataAbertura.formatar() + " ## " +
-			aberto +
-			"]";
+		return "[" + id + " ## " + nome + " ## " + cidade + " ## " + capacidade + " ## " + avaliacao + " ## [" + tipos + "] ## " + faixa + " ## " + horarioAbertura.formatar() + "-" + horarioFechamento.formatar() + " ## " + dataAbertura.formatar() + " ## " + aberto + "]";
 	}
 }
 
@@ -180,22 +211,37 @@ class ColecaoRestaurantes{
 	private Restaurante[] restaurantes;
 
 	public ColecaoRestaurantes(){
-		this.restaurantes = new Restaurante[502];
+		this.restaurantes = new Restaurante[2000];
 		this.tamanho = 0;
 	}
 
-	public int getTamanho(){ return tamanho; }
-
-	public Restaurante[] getRestaurantes(){ return restaurantes; }
-
-	public Restaurante buscarPorId(int id){
-		for(int i = 0; i < tamanho; i++){
-			if(restaurantes[i].getId() == id){
-				return restaurantes[i];
-			}
-		}
-		return null;
+	public int getTamanho(){ 
+		return tamanho; 
 	}
+	public Restaurante[] getRestaurantes(){ 
+		return restaurantes; 
+	}
+
+	public void lerCsv(String path){
+		try{
+			Scanner sc = new Scanner(new java.io.File(path));
+
+			if(sc.hasNextLine()){
+				sc.nextLine();
+			}
+			while(sc.hasNextLine()){
+				String l = sc.nextLine();
+
+				Restaurante r = Restaurante.parseRestaurante(l);
+				restaurantes[tamanho] = r;
+				tamanho++;
+			}
+			sc.close();
+		}catch(Exception e){
+			System.out.println("Erro ao ler");
+		}
+	}
+
 
 	public static ColecaoRestaurantes lerCsv(){
 		ColecaoRestaurantes c = new ColecaoRestaurantes();
@@ -219,42 +265,121 @@ class ColecaoRestaurantes{
 	}
 }
 
-public class Restaurantes1 {
-    public static int stringParaInt(String s){
-        int num = 0;
-        int i = 0;
-        boolean negativo = false;
+class HeapSort{
+	public static void ordenacao(Restaurante[] v, int n, long[] comp, long[] mov){
+		construir(v, n, comp, mov);
+		int tamanho = n;
 
-        if(s.charAt(0) == '-'){
-            negativo = true;
-            i = 1;
-        }
-        for(; i < s.length(); i++){
-            num = num * 10 + (s.charAt(i) - '0');
-        }
-        if(negativo) num = -num;
+		while(tamanho > 1){
+			swap(v, 0, tamanho - 1, mov);
+			tamanho--;
+			reconstruir(v, tamanho, 0, comp, mov);
+		}
+	}
 
-        return num;
-    }
+	public static void construir(Restaurante[] v, int n, long[] comp, long[] mov){
+		int i = n / 2 - 1;
 
-    public static void main(String[] args){
+		while(i >= 0){
+			reconstruir(v, n, i, comp, mov);
+			i--;
+		}
+	}
 
-        Scanner sc = new Scanner(System.in);
+	public static void reconstruir(Restaurante[] v, int n, int i, long[] comp, long[] mov){
+		int maior = i;
+		int esq = 2*i + 1;
+		int dir = 2*i + 2;
 
-        ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
+		if(esq < n){
+			comp[0]++;
+			if(comparar(v[esq], v[maior]) > 0){
+				maior = esq;
+			}
+		}
+		if(dir < n){
+			comp[0]++;
+			if(comparar(v[dir], v[maior]) > 0){
+				maior = dir;
+			}
+		}
+		if(maior != i){
+			swap(v, i, maior, mov);
+			reconstruir(v, n, maior, comp, mov);
+		}
+	}
 
-        String entrada = sc.nextLine();
+	public static int comparar(Restaurante a, Restaurante b){
+		Data d1 = a.getDataAbertura();
+		Data d2 = b.getDataAbertura();
 
-        while(stringParaInt(entrada) != -1){
-            int id = stringParaInt(entrada);
+		if(d1.getAno() != d2.getAno()){
+			return d1.getAno() - d2.getAno();
+		}
+		if(d1.getMes() != d2.getMes()){
+			return d1.getMes() - d2.getMes();
+		}
+		if(d1.getDia() != d2.getDia()){
+			return d1.getDia() - d2.getDia();
+		}
+		return a.getNome().compareTo(b.getNome());
+	}
 
-            Restaurante r = colecao.buscarPorId(id);
-
-            if(r != null){
-                System.out.println(r.imprimir());
-            }
-            entrada = sc.nextLine();
-        }
-        sc.close();
-    }
+	public static void swap(Restaurante[] v, int i, int j, long[] mov){
+		Restaurante temp = v[i];
+		v[i] = v[j];
+		v[j] = temp;
+		mov[0] += 3;
+	}
 }
+
+public class Restaurantes5{
+	public static void main(String[] args) throws Exception{
+		ColecaoRestaurantes colecao = ColecaoRestaurantes.lerCsv();
+		Scanner sc = new Scanner(System.in);
+
+		int[] ids = new int[1000];
+		int qtdIds = 0;
+		int id = sc.nextInt();
+
+		while(id != -1){
+			ids[qtdIds] = id;
+			qtdIds++;
+			id = sc.nextInt();
+		}
+		Restaurante[] selecionados = new Restaurante[1000];
+		int qtd = 0;
+
+		for(int i = 0; i < qtdIds; i++){
+			int j = 0;
+			boolean achou = false;
+
+			while(j < colecao.getTamanho() && achou == false){
+				if(colecao.getRestaurantes()[j].getId() == ids[i]){
+					selecionados[qtd] = colecao.getRestaurantes()[j];
+					qtd++;
+					achou = true;
+				}
+				j++;
+			}
+		}
+
+		long[] comp = {0};
+		long[] mov = {0};
+		long inicio = System.nanoTime();
+		HeapSort.ordenacao(selecionados, qtd, comp, mov);
+		long fim = System.nanoTime();
+		long tempo = fim - inicio;
+
+		FileWriter fw = new FileWriter("845833_heapsort.txt");
+		fw.write("845833\t" + comp[0] + "\t" + mov[0] + "\t" + tempo);
+		fw.close();
+
+		for(int i = 0; i < qtd; i++){
+			System.out.println(selecionados[i].imprimir());
+		}
+
+		sc.close();
+	}
+}
+
